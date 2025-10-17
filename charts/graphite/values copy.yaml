@@ -1,0 +1,243 @@
+## @section Global parameters
+global:
+  ## @param global.imageRegistry Global Docker Image registry
+  imageRegistry: ""
+  ## @param global.imagePullSecrets Global Docker registry secret names as an array
+  imagePullSecrets: []
+
+## @section Common parameters
+## @param nameOverride String to partially override graphite.fullname
+nameOverride: ""
+## @param fullnameOverride String to fully override graphite.fullname
+fullnameOverride: ""
+## @param namespaceOverride String to override the namespace for all resources
+namespaceOverride: ""
+## @param commonLabels Labels to add to all deployed objects
+commonLabels: {}
+## @param commonAnnotations Annotations to add to all deployed objects
+commonAnnotations: {}
+
+## @section Graphite image parameters
+image:
+  ## @param image.registry Graphite image registry
+  registry: docker.io
+  ## @param image.repository Graphite image repository
+  repository: graphiteapp/graphite-statsd
+  ## @param image.tag Graphite image tag
+  tag: "1.1.10-5"
+  ## @param image.pullPolicy Graphite image pull policy
+  pullPolicy: IfNotPresent
+
+## @param replicaCount Number of Graphite instances to deploy
+replicaCount: 1
+
+## @section Pod labels and annotations
+## @param podLabels Map of labels to add to the pods
+podLabels: {}
+## @param podAnnotations Map of annotations to add to the pods
+podAnnotations: {}
+
+## @section Graphite container ports
+## @param ports.webapp Graphite web application port
+## @param ports.carbon Carbon receiver port (plaintext)
+## @param ports.carbonPickle Carbon receiver port (pickle)
+## @param ports.carbonAggregator Carbon aggregator port
+## @param ports.statsd StatsD port
+ports:
+  webapp: 8080
+  carbon: 2003
+  carbonPickle: 2004
+  carbonAggregator: 2023
+  statsd: 8125
+
+## @section Security Context
+## @param podSecurityContext Pod security context
+podSecurityContext:
+  fsGroup: 0
+
+## @param containerSecurityContext Container security context
+containerSecurityContext:
+  runAsUser: 0
+  runAsGroup: 0
+  runAsNonRoot: false
+  readOnlyRootFilesystem: false
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+    - ALL
+
+## @section Resource Management
+## @param resources.limits.cpu CPU limit for Graphite container
+## @param resources.limits.memory Memory limit for Graphite container
+## @param resources.requests.cpu CPU request for Graphite container
+## @param resources.requests.memory Memory request for Graphite container
+resources:
+  limits:
+    cpu: 1000m
+    memory: 2Gi
+  requests:
+    cpu: 100m
+    memory: 512Mi
+
+## @section Persistence
+## @param persistence.enabled Enable persistence for Graphite data
+## @param persistence.storageClass StorageClass for persistent volume
+## @param persistence.accessModes Access modes for persistent volume
+## @param persistence.size Size of persistent volume
+## @param persistence.annotations Annotations for persistent volume claim
+persistence:
+  enabled: true
+  storageClass: ""
+  accessModes:
+    - ReadWriteOnce
+  size: 10Gi
+  annotations: {}
+
+## @section Service configuration
+service:
+  ## @param service.type Service type
+  type: ClusterIP
+  ## @param service.clusterIP Static cluster IP address for the service
+  clusterIP: ""
+  ## @param service.sessionAffinity Session affinity for service
+  sessionAffinity: None
+  ## @param service.sessionAffinityConfig Session affinity configuration
+  sessionAffinityConfig: {}
+  ## @param service.annotations Service annotations
+  annotations: {}
+  ## @param service.labels Service labels
+  labels: {}
+
+## @section Ingress configuration
+ingress:
+  ## @param ingress.enabled Enable ingress for Graphite web interface
+  enabled: false
+  ## @param ingress.className Ingress class name
+  className: ""
+  ## @param ingress.annotations Ingress annotations
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  ## @param ingress.hosts Ingress hosts configuration
+  hosts:
+    - host: graphite.local
+      paths:
+        - path: /
+          pathType: Prefix
+  ## @param ingress.tls Ingress TLS configuration
+  tls: []
+  #  - secretName: graphite-tls
+  #    hosts:
+  #      - graphite.local
+
+## @section ServiceMonitor configuration
+serviceMonitor:
+  ## @param serviceMonitor.enabled Enable ServiceMonitor for Prometheus monitoring
+  enabled: false
+  ## @param serviceMonitor.namespace Namespace for ServiceMonitor (defaults to chart namespace)
+  namespace: ""
+  ## @param serviceMonitor.interval Scrape interval
+  interval: 30s
+  ## @param serviceMonitor.scrapeTimeout Scrape timeout
+  scrapeTimeout: 10s
+  ## @param serviceMonitor.labels ServiceMonitor labels
+  labels: {}
+  ## @param serviceMonitor.annotations ServiceMonitor annotations
+  annotations: {}
+
+## @section Graphite Configuration
+config:
+  ## @param config.carbonCacheSize Carbon cache size
+  carbonCacheSize: 100000
+  ## @param config.maxCreatesPerMinute Maximum creates per minute
+  maxCreatesPerMinute: 50
+  ## @param config.maxUpdatesPerSecond Maximum updates per second
+  maxUpdatesPerSecond: 500
+  ## @param config.timezone Timezone for Graphite
+  timezone: UTC
+  ## @param config.logLevel Log level for Graphite services
+  logLevel: INFO
+  ## @param config.enableLogRotation Enable log rotation
+  enableLogRotation: true
+  ## @param config.whisperAutoflush Whisper autoflush setting
+  whisperAutoflush: false
+
+  ## @section Storage configuration
+  storage:
+    ## @param config.storage.patterns Storage patterns for metrics retention
+    patterns:
+      - name: "default"
+        pattern: "*"
+        retentions: "60s:1d,300s:7d,3600s:1y"
+
+  ## @section Carbon configuration
+  carbon:
+    ## @param config.carbon.enableUdp Enable UDP listener for Carbon
+    enableUdp: false
+    ## @param config.carbon.lineReceiverInterface Carbon line receiver interface
+    lineReceiverInterface: "0.0.0.0"
+    ## @param config.carbon.pickleReceiverInterface Carbon pickle receiver interface
+    pickleReceiverInterface: "0.0.0.0"
+    ## @param config.carbon.cacheQueryInterface Carbon cache query interface
+    cacheQueryInterface: "0.0.0.0"
+
+  ## @section StatsD configuration
+  statsd:
+    ## @param config.statsd.enabled Enable StatsD daemon
+    enabled: true
+    ## @param config.statsd.interface StatsD interface
+    interface: "0.0.0.0"
+    ## @param config.statsd.flushInterval StatsD flush interval in milliseconds
+    flushInterval: 10000
+    ## @param config.statsd.percentThreshold StatsD percentile thresholds
+    percentThreshold: [90, 95]
+
+## @section Health checks
+## @param livenessProbe.enabled Enable liveness probe
+## @param livenessProbe.initialDelaySeconds Initial delay for liveness probe
+## @param livenessProbe.periodSeconds Period for liveness probe
+## @param livenessProbe.timeoutSeconds Timeout for liveness probe
+## @param livenessProbe.failureThreshold Failure threshold for liveness probe
+## @param livenessProbe.successThreshold Success threshold for liveness probe
+livenessProbe:
+  enabled: true
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+  successThreshold: 1
+
+## @param readinessProbe.enabled Enable readiness probe
+## @param readinessProbe.initialDelaySeconds Initial delay for readiness probe
+## @param readinessProbe.periodSeconds Period for readiness probe
+## @param readinessProbe.timeoutSeconds Timeout for readiness probe
+## @param readinessProbe.failureThreshold Failure threshold for readiness probe
+## @param readinessProbe.successThreshold Success threshold for readiness probe
+readinessProbe:
+  enabled: true
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+  successThreshold: 1
+
+## @section Node selection
+## @param nodeSelector Node labels for pod assignment
+nodeSelector: {}
+## @param tolerations Tolerations for pod assignment
+tolerations: []
+## @param affinity Affinity for pod assignment
+affinity: {}
+
+## @section Pod Disruption Budget
+## @param pdb.enabled Enable Pod Disruption Budget
+## @param pdb.minAvailable Minimum number of available pods
+## @param pdb.maxUnavailable Maximum number of unavailable pods
+pdb:
+  enabled: false
+  minAvailable: 1
+  maxUnavailable: ""
+
+## @section Extra objects
+## @param extraObjects Extra objects to deploy with the chart
+extraObjects: []

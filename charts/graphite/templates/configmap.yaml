@@ -1,0 +1,26 @@
+{{- if not .Values.config.existingConfigMap }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "graphite.configMapName" . }}
+  namespace: {{ include "cloudpirates.namespace" . }}
+  labels:
+    {{- include "graphite.labels" . | nindent 4 }}
+  {{- with (include "graphite.annotations" .) }}
+  annotations:
+    {{- . | nindent 4 }}
+  {{- end }}
+data:
+  carbon.conf: |
+{{ include "graphite.carbonConfig" . | indent 4 }}
+  storage-schemas.conf: |
+{{ include "graphite.storagePatterns" . | indent 4 }}
+  {{- if .Values.config.statsd.enabled }}
+  config.js: |
+{{ include "graphite.statsdConfig" . | indent 4 }}
+  {{- end }}
+  {{- if .Values.nginx.config }}
+  nginx.conf: |
+{{ .Values.nginx.config | indent 4 }}
+  {{- end }}
+{{- end }}

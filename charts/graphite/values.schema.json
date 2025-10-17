@@ -1,0 +1,325 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "global": {
+            "type": "object",
+            "properties": {
+                "imageRegistry": {
+                    "type": "string"
+                },
+                "imagePullSecrets": {
+                    "type": "array"
+                }
+            }
+        },
+        "nameOverride": {
+            "type": "string"
+        },
+        "fullnameOverride": {
+            "type": "string"
+        },
+        "namespaceOverride": {
+            "type": "string"
+        },
+        "commonLabels": {
+            "type": "object"
+        },
+        "commonAnnotations": {
+            "type": "object"
+        },
+        "image": {
+            "type": "object",
+            "properties": {
+                "registry": {
+                    "type": "string"
+                },
+                "repository": {
+                    "type": "string"
+                },
+                "tag": {
+                    "type": "string"
+                },
+                "pullPolicy": {
+                    "type": "string",
+                    "enum": ["Always", "IfNotPresent", "Never"]
+                }
+            }
+        },
+        "replicaCount": {
+            "type": "integer",
+            "minimum": 1
+        },
+        "podLabels": {
+            "type": "object"
+        },
+        "podAnnotations": {
+            "type": "object"
+        },
+        "ports": {
+            "type": "object",
+            "properties": {
+                "webapp": {
+                    "type": "integer"
+                },
+                "carbon": {
+                    "type": "integer"
+                },
+                "carbonPickle": {
+                    "type": "integer"
+                },
+                "carbonAggregator": {
+                    "type": "integer"
+                },
+                "statsd": {
+                    "type": "integer"
+                }
+            }
+        },
+        "podSecurityContext": {
+            "type": "object"
+        },
+        "containerSecurityContext": {
+            "type": "object"
+        },
+        "resources": {
+            "type": "object",
+            "properties": {
+                "limits": {
+                    "type": "object"
+                },
+                "requests": {
+                    "type": "object"
+                }
+            }
+        },
+        "persistence": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "boolean"
+                },
+                "storageClass": {
+                    "type": "string"
+                },
+                "accessModes": {
+                    "type": "array"
+                },
+                "size": {
+                    "type": "string"
+                },
+                "annotations": {
+                    "type": "object"
+                }
+            }
+        },
+        "service": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "enum": ["ClusterIP", "NodePort", "LoadBalancer"]
+                },
+                "clusterIP": {
+                    "type": "string"
+                },
+                "sessionAffinity": {
+                    "type": "string"
+                },
+                "sessionAffinityConfig": {
+                    "type": "object"
+                },
+                "annotations": {
+                    "type": "object"
+                },
+                "labels": {
+                    "type": "object"
+                }
+            }
+        },
+        "ingress": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "boolean"
+                },
+                "className": {
+                    "type": "string"
+                },
+                "annotations": {
+                    "type": "object"
+                },
+                "hosts": {
+                    "type": "array"
+                },
+                "tls": {
+                    "type": "array"
+                }
+            }
+        },
+        "serviceMonitor": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "boolean"
+                },
+                "namespace": {
+                    "type": "string"
+                },
+                "interval": {
+                    "type": "string"
+                },
+                "scrapeTimeout": {
+                    "type": "string"
+                },
+                "labels": {
+                    "type": "object"
+                },
+                "annotations": {
+                    "type": "object"
+                }
+            }
+        },
+        "config": {
+            "type": "object",
+            "properties": {
+                "carbonCacheSize": {
+                    "type": "integer"
+                },
+                "maxCreatesPerMinute": {
+                    "type": "integer"
+                },
+                "maxUpdatesPerSecond": {
+                    "type": "integer"
+                },
+                "timezone": {
+                    "type": "string"
+                },
+                "logLevel": {
+                    "type": "string",
+                    "enum": ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
+                },
+                "enableLogRotation": {
+                    "type": "boolean"
+                },
+                "whisperAutoflush": {
+                    "type": "boolean"
+                },
+                "storage": {
+                    "type": "object",
+                    "properties": {
+                        "patterns": {
+                            "type": "array"
+                        }
+                    }
+                },
+                "carbon": {
+                    "type": "object",
+                    "properties": {
+                        "enableUdp": {
+                            "type": "boolean"
+                        },
+                        "lineReceiverInterface": {
+                            "type": "string"
+                        },
+                        "pickleReceiverInterface": {
+                            "type": "string"
+                        },
+                        "cacheQueryInterface": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "statsd": {
+                    "type": "object",
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean"
+                        },
+                        "interface": {
+                            "type": "string"
+                        },
+                        "flushInterval": {
+                            "type": "integer"
+                        },
+                        "percentThreshold": {
+                            "type": "array"
+                        }
+                    }
+                }
+            }
+        },
+        "livenessProbe": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "boolean"
+                },
+                "initialDelaySeconds": {
+                    "type": "integer"
+                },
+                "periodSeconds": {
+                    "type": "integer"
+                },
+                "timeoutSeconds": {
+                    "type": "integer"
+                },
+                "failureThreshold": {
+                    "type": "integer"
+                },
+                "successThreshold": {
+                    "type": "integer"
+                }
+            }
+        },
+        "readinessProbe": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "boolean"
+                },
+                "initialDelaySeconds": {
+                    "type": "integer"
+                },
+                "periodSeconds": {
+                    "type": "integer"
+                },
+                "timeoutSeconds": {
+                    "type": "integer"
+                },
+                "failureThreshold": {
+                    "type": "integer"
+                },
+                "successThreshold": {
+                    "type": "integer"
+                }
+            }
+        },
+        "nodeSelector": {
+            "type": "object"
+        },
+        "tolerations": {
+            "type": "array"
+        },
+        "affinity": {
+            "type": "object"
+        },
+        "pdb": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "boolean"
+                },
+                "minAvailable": {
+                    "type": ["string", "integer"]
+                },
+                "maxUnavailable": {
+                    "type": ["string", "integer"]
+                }
+            }
+        },
+        "extraObjects": {
+            "type": "array"
+        }
+    }
+}

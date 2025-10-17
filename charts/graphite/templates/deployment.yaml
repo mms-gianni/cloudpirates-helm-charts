@@ -1,0 +1,175 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "graphite.fullname" . }}
+  namespace: {{ include "cloudpirates.namespace" . }}
+  labels:
+    {{- include "graphite.labels" . | nindent 4 }}
+  {{- with (include "graphite.annotations" .) }}
+  annotations:
+    {{- . | nindent 4 }}
+  {{- end }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "graphite.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "graphite.selectorLabels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      annotations:
+        checksum/config: {{ include "graphite.carbonConfig" . | sha256sum }}
+        {{- if .Values.config.statsd.enabled }}
+        checksum/statsd-config: {{ include "graphite.statsdConfig" . | sha256sum }}
+        {{- end }}
+        checksum/storage-config: {{ include "graphite.storagePatterns" . | sha256sum }}
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with (include "graphite.imagePullSecrets" .) }}
+      {{ . | nindent 6 }}
+      {{- end }}
+      securityContext: {{ include "cloudpirates.renderPodSecurityContext" . | nindent 8 }}
+      containers:
+        - name: graphite
+          image: {{ include "graphite.image" . | quote }}
+          imagePullPolicy: {{ include "cloudpirates.imagePullPolicy" (dict "image" .Values.image) }}
+          securityContext: {{ include "cloudpirates.renderContainerSecurityContext" . | nindent 12 }}
+          #command: ["tail", "-f", "/dev/null"]
+          ports:
+            - name: webapp
+              containerPort: {{ .Values.ports.webapp }}
+              protocol: TCP
+            - name: carbon
+              containerPort: {{ .Values.ports.carbon }}
+              protocol: TCP
+            - name: carbon-pickle
+              containerPort: {{ .Values.ports.carbonPickle }}
+              protocol: TCP
+            - name: carbon-aggr
+              containerPort: {{ .Values.ports.carbonAggregator }}
+              protocol: TCP
+            {{- if .Values.config.statsd.enabled }}
+            - name: statsd
+              containerPort: {{ .Values.ports.statsd }}
+              protocol: UDP
+            {{- end }}
+          env:
+            - name: PYTHONUNBUFFERED
+              value: "1"
+            - name: GRAPHITE_TIME_ZONE
+              value: {{ .Values.config.timezone | quote }}
+            - name: GRAPHITE_LOG_LEVEL
+              value: {{ .Values.config.logLevel | quote }}
+          {{- if .Values.livenessProbe.enabled }}
+          livenessProbe:
+            httpGet:
+              path: /
+              port: webapp
+            initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
+            successThreshold: {{ .Values.livenessProbe.successThreshold }}
+          {{- end }}
+          {{- if .Values.readinessProbe.enabled }}
+          readinessProbe:
+            httpGet:
+              path: /
+              port: webapp
+            initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
+            successThreshold: {{ .Values.readinessProbe.successThreshold }}
+          {{- end }}
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: graphite-storage
+              mountPath: /opt/graphite/storage
+            - name: carbon-config
+              mountPath: /opt/graphite/conf/carbon.conf
+              subPath: carbon.conf
+            - name: storage-schemas
+              mountPath: /opt/graphite/conf/storage-schemas.conf
+              subPath: storage-schemas.conf
+            {{- if .Values.config.statsd.enabled }}
+            - name: statsd-config
+              mountPath: /opt/statsd/config.js
+              subPath: config.js
+            {{- end }}
+            {{- if .Values.nginx.config }}
+            - name: nginx-config
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+            - name: nginx-tmp
+              mountPath: /var/lib/nginx/tmp
+            {{- end }}
+            - name: tmp-dir
+              mountPath: /tmp
+            - name: var-run
+              mountPath: /var/run
+      volumes:
+        - name: graphite-storage
+          {{- if .Values.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ include "graphite.claimName" . }}
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+        - name: carbon-config
+          configMap:
+            name: {{ include "graphite.configMapName" . }}
+            items:
+              - key: carbon.conf
+                path: carbon.conf
+        - name: storage-schemas
+          configMap:
+            name: {{ include "graphite.configMapName" . }}
+            items:
+              - key: storage-schemas.conf
+                path: storage-schemas.conf
+        {{- if .Values.config.statsd.enabled }}
+        - name: statsd-config
+          configMap:
+            name: {{ include "graphite.configMapName" . }}
+            items:
+              - key: config.js
+                path: config.js
+        {{- end }}
+        {{- if .Values.nginx.config }}
+        - name: nginx-config
+          configMap:
+            name: {{ include "graphite.configMapName" . }}
+            items:
+              - key: nginx.conf
+                path: nginx.conf
+        - name: nginx-tmp
+          emptyDir: {}
+        {{- end }}
+        - name: supervise-dirs
+          emptyDir: {}
+        - name: tmp-dir
+          emptyDir: {}
+        - name: var-run
+          emptyDir: {}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

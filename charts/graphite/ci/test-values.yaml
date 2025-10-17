@@ -1,0 +1,46 @@
+# CI test values for graphite chart
+# Optimized for faster testing in kind clusters and GitHub Actions
+
+image:
+  # Use IfNotPresent to avoid repeated pulls
+  pullPolicy: IfNotPresent
+
+# Minimal resources for kind cluster
+resources:
+  limits:
+    cpu: 500m
+    memory: 1Gi
+  requests:
+    cpu: 50m
+    memory: 256Mi
+
+# Disable persistence for CI tests
+persistence:
+  enabled: false
+
+# Reduce probe delays for faster readiness in tests
+readinessProbe:
+  enabled: true
+  initialDelaySeconds: 10
+  periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 6
+
+livenessProbe:
+  enabled: true
+  initialDelaySeconds: 20
+  periodSeconds: 10
+  timeoutSeconds: 3
+  failureThreshold: 6
+
+# Configure storage with shorter retention for testing
+# Enable StatsD for testing
+config:
+  storage:
+    patterns:
+      - name: "test"
+        pattern: "*"
+        retentions: "10s:1h,1m:1d"
+  statsd:
+    enabled: true
+    flushInterval: 5000
