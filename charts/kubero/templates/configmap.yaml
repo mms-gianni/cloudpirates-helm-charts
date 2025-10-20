@@ -1,0 +1,20 @@
+{{- if .Values.ui.enabled -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "kubero.ui.fullname" . }}-config
+  namespace: {{ include "cloudpirates.namespace" . | quote }}
+  labels:
+    {{- include "kubero.ui.labels" . | nindent 4 }}
+  {{- with .Values.commonAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+data:
+  config.yaml: |
+    kubero:
+      namespace: {{ .Values.ui.env.KUBERO_NAMESPACE | default (include "cloudpirates.namespace" .) | quote }}
+      {{- if .Values.ui.env.KUBERO_WEBHOOK_URL }}
+      webhook_url: {{ .Values.ui.env.KUBERO_WEBHOOK_URL | quote }}
+      {{- end }}
+{{- end }}

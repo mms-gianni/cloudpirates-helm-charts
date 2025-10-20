@@ -1,0 +1,137 @@
+suite: test deployment
+templates:
+  - operator-deployment.yaml
+  - ui-deployment.yaml
+  - serviceaccount.yaml
+  - rbac.yaml
+  - service.yaml
+tests:
+  - it: should render operator deployment with default values
+    template: operator-deployment.yaml
+    asserts:
+      - isKind:
+          of: Deployment
+      - equal:
+          path: metadata.name
+          value: RELEASE-NAME-kubero-operator
+      - equal:
+          path: spec.replicas
+          value: 1
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: ghcr.io/kubero-dev/kubero-operator/kuberoapp:v0.1.3
+
+  - it: should render ui deployment with default values
+    template: ui-deployment.yaml
+    asserts:
+      - isKind:
+          of: Deployment
+      - equal:
+          path: metadata.name
+          value: RELEASE-NAME-kubero-ui
+      - equal:
+          path: spec.replicas
+          value: 1
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: ghcr.io/kubero-dev/kubero:v3.1.1
+
+  - it: should not render operator deployment when disabled
+    template: operator-deployment.yaml
+    set:
+      operator.enabled: false
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should not render ui deployment when disabled
+    template: ui-deployment.yaml
+    set:
+      ui.enabled: false
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should render service account when enabled
+    template: serviceaccount.yaml
+    asserts:
+      - isKind:
+          of: ServiceAccount
+      - equal:
+          path: metadata.name
+          value: RELEASE-NAME-kubero
+
+  - it: should not render service account when disabled
+    template: serviceaccount.yaml
+    set:
+      serviceAccount.create: false
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should render RBAC resources when enabled
+    template: rbac.yaml
+    asserts:
+      - hasDocuments:
+          count: 2
+      - isKind:
+          of: ClusterRole
+          documentIndex: 0
+      - isKind:
+          of: ClusterRoleBinding
+          documentIndex: 1
+
+  - it: should not render RBAC resources when disabled
+    template: rbac.yaml
+    set:
+      rbac.create: false
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should render service with correct selector
+    template: service.yaml
+    asserts:
+      - isKind:
+          of: Service
+      - equal:
+          path: spec.selector
+          value:
+            app.kubernetes.io/name: kubero-ui
+            app.kubernetes.io/instance: RELEASE-NAME
+            app.kubernetes.io/component: ui
+
+  - it: should apply custom labels and annotations
+    template: operator-deployment.yaml
+    set:
+      commonLabels:
+        custom: label
+      commonAnnotations:
+        custom: annotation
+    asserts:
+      - equal:
+          path: metadata.labels.custom
+          value: label
+      - equal:
+          path: metadata.annotations.custom
+          value: annotation
+
+  - it: should configure resources correctly
+    template: ui-deployment.yaml
+    set:
+      ui.resources:
+        limits:
+          memory: 1Gi
+        requests:
+          cpu: 200m
+          memory: 512Mi
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].resources.limits.memory
+          value: 1Gi
+      - equal:
+          path: spec.template.spec.containers[0].resources.requests.cpu
+          value: 200m
+      - equal:
+          path: spec.template.spec.containers[0].resources.requests.memory
+          value: 512Mi

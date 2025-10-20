@@ -1,0 +1,42 @@
+1. Get the Kubero UI URL by running these commands:
+{{- if .Values.ingress.enabled }}
+{{- range $host := .Values.ingress.hosts }}
+  {{- range .paths }}
+  http{{ if $.Values.ingress.tls }}s{{ end }}://{{ $host.host }}{{ .path }}
+  {{- end }}
+{{- end }}
+{{- else if contains "NodePort" .Values.service.type }}
+  export NODE_PORT=$(kubectl get --namespace {{ include "cloudpirates.namespace" . }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ include "kubero.ui.fullname" . }})
+  export NODE_IP=$(kubectl get nodes --namespace {{ include "cloudpirates.namespace" . }} -o jsonpath="{.items[0].status.addresses[0].address}")
+  echo http://$NODE_IP:$NODE_PORT
+{{- else if contains "LoadBalancer" .Values.service.type }}
+     NOTE: It may take a few minutes for the LoadBalancer IP to be available.
+           You can watch the status of by running 'kubectl get --namespace {{ include "cloudpirates.namespace" . }} svc -w {{ include "kubero.ui.fullname" . }}'
+  export SERVICE_IP=$(kubectl get svc --namespace {{ include "cloudpirates.namespace" . }} {{ include "kubero.ui.fullname" . }} --template "{{"{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}"}}")
+  echo http://$SERVICE_IP:{{ (index .Values.service.ports 0).port }}
+{{- else if contains "ClusterIP" .Values.service.type }}
+  export POD_NAME=$(kubectl get pods --namespace {{ include "cloudpirates.namespace" . }} -l "{{ include "kubero.ui.selectorLabels" . | replace ": " "=" | replace "\n" "," }}" -o jsonpath="{.items[0].metadata.name}")
+  export CONTAINER_PORT=$(kubectl get pod --namespace {{ include "cloudpirates.namespace" . }} $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
+  echo "Visit http://127.0.0.1:8080 to use Kubero"
+  kubectl --namespace {{ include "cloudpirates.namespace" . }} port-forward $POD_NAME 8080:$CONTAINER_PORT
+{{- end }}
+
+2. Check the status of your Kubero installation:
+
+   kubectl get pods -l "{{ include "kubero.selectorLabels" . | replace ": " "=" | replace "\n" "," }}" -n {{ include "cloudpirates.namespace" . }}
+
+{{- if .Values.operator.enabled }}
+3. The Kubero Operator is running and ready to manage your applications.
+{{- end }}
+
+{{- if .Values.ui.enabled }}
+4. The Kubero UI is available for managing your Platform-as-a-Service deployments.
+{{- end }}
+
+5. For more information about Kubero, visit:
+   - Documentation: https://www.kubero.dev/docs/
+   - GitHub: https://github.com/kubero-dev/kubero
+
+⚠️  IMPORTANT SECURITY NOTICE:
+Please ensure you configure proper authentication and security settings for production use.
+Review the values.yaml file and customize security contexts, resource limits, and access controls.

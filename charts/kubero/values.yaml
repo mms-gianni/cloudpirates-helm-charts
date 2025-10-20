@@ -1,0 +1,304 @@
+## @section Global parameters
+global:
+  ## @param global.imageRegistry Global Docker Image registry
+  imageRegistry: ""
+  ## @param global.imagePullSecrets Global Docker registry secret names as an array
+  imagePullSecrets: []
+
+## @param targetPlatform Target platform (openshift or kubernetes)
+targetPlatform: ""
+
+## @section Common parameters
+## @param nameOverride String to partially override kubero.fullname
+nameOverride: ""
+## @param fullnameOverride String to fully override kubero.fullname
+fullnameOverride: ""
+## @param commonLabels Labels to add to all deployed objects
+commonLabels: {}
+## @param commonAnnotations Annotations to add to all deployed objects
+commonAnnotations: {}
+
+## @section Kubero Operator Configuration
+operator:
+  ## @param operator.enabled Enable deployment of Kubero Operator
+  enabled: true
+  
+  ## @section Operator Image Configuration
+  image:
+    ## @param operator.image.registry Kubero Operator image registry
+    registry: ghcr.io
+    ## @param operator.image.repository Kubero Operator image repository
+    repository: kubero-dev/kubero-operator/kuberoapp
+    ## @param operator.image.tag Kubero Operator image tag (immutable tags are recommended)
+    tag: "v0.1.3"
+    ## @param operator.image.imagePullPolicy Kubero Operator image pull policy
+    imagePullPolicy: Always
+    ## @param operator.image.pullSecrets Kubero Operator image pull secrets
+    pullSecrets: []
+
+  ## @section Operator Deployment Configuration
+  ## @param operator.replicaCount Number of Kubero Operator replicas to deploy
+  replicaCount: 1
+  
+  ## @param operator.podAnnotations Map of annotations to add to the operator pods
+  podAnnotations: {}
+  ## @param operator.podLabels Map of labels to add to the operator pods
+  podLabels: {}
+
+  ## @section Operator Security Context
+  podSecurityContext:
+    ## @param operator.podSecurityContext.enabled Enable pod security context
+    enabled: true
+    ## @param operator.podSecurityContext.runAsNonRoot Run container as non-root user
+    runAsNonRoot: true
+    ## @param operator.podSecurityContext.seccompProfile.type Seccomp profile type
+    seccompProfile:
+      type: RuntimeDefault
+
+  containerSecurityContext:
+    ## @param operator.containerSecurityContext.enabled Enable container security context
+    enabled: true
+    ## @param operator.containerSecurityContext.readOnlyRootFilesystem Enable read-only root filesystem
+    readOnlyRootFilesystem: true
+    ## @param operator.containerSecurityContext.allowPrivilegeEscalation Allow privilege escalation
+    allowPrivilegeEscalation: false
+    ## @param operator.containerSecurityContext.capabilities.drop Drop capabilities
+    capabilities:
+      drop:
+        - ALL
+
+  ## @section Operator Resources
+  resources:
+    ## @param operator.resources.limits.memory Memory limit for operator container
+    limits:
+      memory: 512Mi
+    ## @param operator.resources.requests.memory Memory request for operator container
+    ## @param operator.resources.requests.cpu CPU request for operator container
+    requests:
+      cpu: 100m
+      memory: 256Mi
+
+  ## @section Operator Health Checks
+  livenessProbe:
+    ## @param operator.livenessProbe.enabled Enable liveness probe
+    enabled: true
+    ## @param operator.livenessProbe.httpGet.path HTTP path for liveness probe
+    httpGet:
+      path: /healthz
+      port: 8081
+    ## @param operator.livenessProbe.initialDelaySeconds Initial delay for liveness probe
+    initialDelaySeconds: 15
+    ## @param operator.livenessProbe.periodSeconds Period for liveness probe
+    periodSeconds: 20
+
+  readinessProbe:
+    ## @param operator.readinessProbe.enabled Enable readiness probe
+    enabled: true
+    ## @param operator.readinessProbe.httpGet.path HTTP path for readiness probe
+    httpGet:
+      path: /readyz
+      port: 8081
+    ## @param operator.readinessProbe.initialDelaySeconds Initial delay for readiness probe
+    initialDelaySeconds: 5
+    ## @param operator.readinessProbe.periodSeconds Period for readiness probe
+    periodSeconds: 10
+
+## @section Kubero UI Configuration
+ui:
+  ## @param ui.enabled Enable deployment of Kubero UI
+  enabled: true
+  
+  ## @section UI Image Configuration
+  image:
+    ## @param ui.image.registry Kubero UI image registry
+    registry: ghcr.io
+    ## @param ui.image.repository Kubero UI image repository
+    repository: kubero-dev/kubero
+    ## @param ui.image.tag Kubero UI image tag (immutable tags are recommended)
+    tag: "v3.1.1"
+    ## @param ui.image.imagePullPolicy Kubero UI image pull policy
+    imagePullPolicy: Always
+    ## @param ui.image.pullSecrets Kubero UI image pull secrets
+    pullSecrets: []
+
+  ## @section UI Deployment Configuration
+  ## @param ui.replicaCount Number of Kubero UI replicas to deploy
+  replicaCount: 1
+  
+  ## @param ui.podAnnotations Map of annotations to add to the UI pods
+  podAnnotations: {}
+  ## @param ui.podLabels Map of labels to add to the UI pods
+  podLabels: {}
+
+  ## @section UI Container Configuration
+  containerPorts:
+    - name: http
+      containerPort: 2000
+
+  ## @section UI Security Context
+  podSecurityContext:
+    ## @param ui.podSecurityContext.enabled Enable pod security context
+    enabled: true
+    ## @param ui.podSecurityContext.runAsNonRoot Run container as non-root user
+    runAsNonRoot: true
+    ## @param ui.podSecurityContext.seccompProfile.type Seccomp profile type
+    seccompProfile:
+      type: RuntimeDefault
+
+  containerSecurityContext:
+    ## @param ui.containerSecurityContext.enabled Enable container security context
+    enabled: true
+    ## @param ui.containerSecurityContext.readOnlyRootFilesystem Enable read-only root filesystem
+    readOnlyRootFilesystem: true
+    ## @param ui.containerSecurityContext.allowPrivilegeEscalation Allow privilege escalation
+    allowPrivilegeEscalation: false
+    ## @param ui.containerSecurityContext.capabilities.drop Drop capabilities
+    capabilities:
+      drop:
+        - ALL
+
+  ## @section UI Resources
+  resources:
+    ## @param ui.resources.limits.memory Memory limit for UI container
+    limits:
+      memory: 512Mi
+    ## @param ui.resources.requests.memory Memory request for UI container
+    ## @param ui.resources.requests.cpu CPU request for UI container
+    requests:
+      cpu: 100m
+      memory: 256Mi
+
+  ## @section UI Health Checks
+  livenessProbe:
+    ## @param ui.livenessProbe.enabled Enable liveness probe
+    enabled: true
+    ## @param ui.livenessProbe.httpGet.path HTTP path for liveness probe
+    httpGet:
+      path: /health
+      port: http
+    ## @param ui.livenessProbe.initialDelaySeconds Initial delay for liveness probe
+    initialDelaySeconds: 30
+    ## @param ui.livenessProbe.periodSeconds Period for liveness probe
+    periodSeconds: 30
+
+  readinessProbe:
+    ## @param ui.readinessProbe.enabled Enable readiness probe
+    enabled: true
+    ## @param ui.readinessProbe.httpGet.path HTTP path for readiness probe
+    httpGet:
+      path: /health
+      port: http
+    ## @param ui.readinessProbe.initialDelaySeconds Initial delay for readiness probe
+    initialDelaySeconds: 5
+    ## @param ui.readinessProbe.periodSeconds Period for readiness probe
+    periodSeconds: 10
+
+  ## @section UI Environment Variables
+  env:
+    ## @param ui.env.KUBERO_NAMESPACE Namespace where Kubero operates
+    KUBERO_NAMESPACE: ""
+    ## @param ui.env.KUBERO_SESSION_KEY Session key for Kubero UI
+    KUBERO_SESSION_KEY: ""
+    ## @param ui.env.KUBERO_WEBHOOK_URL Webhook URL for Kubero
+    KUBERO_WEBHOOK_URL: ""
+
+## @section Service Account Configuration
+serviceAccount:
+  ## @param serviceAccount.create Specifies whether a service account should be created
+  create: true
+  ## @param serviceAccount.annotations Annotations to add to the service account
+  annotations: {}
+  ## @param serviceAccount.name The name of the service account to use
+  ## If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+## @section RBAC Configuration
+rbac:
+  ## @param rbac.create Specifies whether RBAC resources should be created
+  create: true
+
+## @section Service Configuration
+service:
+  ## @param service.type Kubero UI service type
+  type: ClusterIP
+  ## @param service.ports Service ports configuration
+  ports:
+    - port: 80
+      targetPort: http
+      protocol: TCP
+      name: http
+
+## @section Ingress Configuration
+ingress:
+  ## @param ingress.enabled Enable ingress record generation for Kubero UI
+  enabled: false
+  ## @param ingress.className IngressClass that will be be used to implement the Ingress
+  className: ""
+  ## @param ingress.annotations Additional annotations for the Ingress resource
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  ## @param ingress.hosts An array with the list of hosts for ingress
+  hosts:
+    - host: kubero.localhost
+      paths:
+        - path: /
+          pathType: Prefix
+  ## @param ingress.tls The list of hosts to be covered with this ingress record
+  tls: []
+  #  - secretName: kubero-tls
+  #    hosts:
+  #      - kubero.localhost
+
+## @section Persistence Configuration
+persistence:
+  ## @param persistence.enabled Enable persistence using Persistent Volume Claims
+  enabled: false
+  ## @param persistence.storageClass Persistent Volume storage class
+  storageClass: ""
+  ## @param persistence.accessModes Persistent Volume access modes
+  accessModes:
+    - ReadWriteOnce
+  ## @param persistence.size Persistent Volume size
+  size: 8Gi
+  ## @param persistence.annotations Additional custom annotations for the PVC
+  annotations: {}
+
+## @section Node Assignment
+## @param nodeSelector Node labels for pod assignment
+nodeSelector: {}
+## @param tolerations List of node taints to tolerate
+tolerations: []
+## @param affinity Affinity for pod assignment
+affinity: {}
+
+## @section Pod Disruption Budget
+podDisruptionBudget:
+  ## @param podDisruptionBudget.enabled Enable Pod Disruption Budget
+  enabled: false
+  ## @param podDisruptionBudget.minAvailable Minimum number/percentage of pods that should remain scheduled
+  minAvailable: 1
+  ## @param podDisruptionBudget.maxUnavailable Maximum number/percentage of pods that may be made unavailable
+  maxUnavailable: ""
+
+## @section Extra Configuration
+## @param extraObjects Extra objects to deploy (value evaluated as a template)
+extraObjects: []
+
+## @section Metrics Configuration
+metrics:
+  ## @param metrics.enabled Enable metrics
+  enabled: false
+  ## @param metrics.serviceMonitor.enabled Create ServiceMonitor resource for scraping metrics using PrometheusOperator
+  serviceMonitor:
+    enabled: false
+    ## @param metrics.serviceMonitor.namespace Namespace which Prometheus is running in
+    namespace: ""
+    ## @param metrics.serviceMonitor.annotations Additional annotations for the ServiceMonitor
+    annotations: {}
+    ## @param metrics.serviceMonitor.labels Additional labels for the ServiceMonitor
+    labels: {}
+    ## @param metrics.serviceMonitor.interval Interval at which metrics should be scraped
+    interval: 30s
+    ## @param metrics.serviceMonitor.scrapeTimeout Timeout after which the scrape is ended
+    scrapeTimeout: ""

@@ -1,0 +1,5 @@
+repositoryName: helm-charts
+repositoryURL: https://github.com/CloudPirates-io/helm-charts
+owners:
+  - name: CloudPirates GmbH & Co. KG
+    email: hello@cloudpirates.io

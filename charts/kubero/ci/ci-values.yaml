@@ -1,0 +1,30 @@
+# CI test values - basic functionality test
+ingress:
+  enabled: true
+  hosts:
+    - host: kubero-ci.localhost
+      paths:
+        - path: /
+          pathType: Prefix
+
+ui:
+  env:
+    KUBERO_SESSION_KEY: "test-session-key"
+    KUBERO_WEBHOOK_URL: "http://kubero-ci.localhost/api/webhook"
+
+# Reduce resource requirements for CI
+operator:
+  resources:
+    limits:
+      memory: 256Mi
+    requests:
+      cpu: 50m
+      memory: 128Mi
+
+ui:
+  resources:
+    limits:
+      memory: 256Mi
+    requests:
+      cpu: 50m
+      memory: 128Mi

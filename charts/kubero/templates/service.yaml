@@ -1,0 +1,21 @@
+{{- if .Values.ui.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "kubero.ui.fullname" . }}
+  namespace: {{ include "cloudpirates.namespace" . | quote }}
+  labels:
+    {{- include "kubero.ui.labels" . | nindent 4 }}
+  {{- with .Values.commonAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.service.type }}
+  {{- with .Values.service.ports }}
+  ports:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  selector:
+    {{- include "kubero.ui.selectorLabels" . | nindent 4 }}
+{{- end }}
