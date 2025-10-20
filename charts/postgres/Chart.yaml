@@ -42,8 +42,5 @@ annotations:
     - name: Maintainer CloudPirates
       url: https://www.cloudpirates.io
   artifacthub.io/changes: |2
-        - kind: changed
-          description: "Add support for `extraVolumes` and `extraVolumeMounts` (#387)"
-          links:
-            - name: "Commit ed17601"
-              url: "https://github.com/CloudPirates-io/helm-charts/commit/ed17601"
+        - kind: added
+          description: "Initial chart release"

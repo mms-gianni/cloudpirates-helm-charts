@@ -41,8 +41,5 @@ annotations:
     - name: Maintainer CloudPirates
       url: https://www.cloudpirates.io
   artifacthub.io/changes: |2
-        - kind: changed
-          description: "Network policies (#412)"
-          links:
-            - name: "Commit 43c7285"
-              url: "https://github.com/CloudPirates-io/helm-charts/commit/43c7285"
+        - kind: added
+          description: "Initial chart release"

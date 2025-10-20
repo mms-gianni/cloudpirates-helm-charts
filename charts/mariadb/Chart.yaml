@@ -51,8 +51,5 @@ annotations:
     - name: Maintainer CloudPirates
       url: https://www.cloudpirates.io
   artifacthub.io/changes: |2
-        - kind: changed
-          description: "Bugfix/redis non cloudpirates prefix (#394)"
-          links:
-            - name: "Commit 02e03ed"
-              url: "https://github.com/CloudPirates-io/helm-charts/commit/02e03ed"
+        - kind: added
+          description: "Initial chart release"
