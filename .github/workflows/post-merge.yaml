@@ -240,8 +240,24 @@ jobs:
             echo "has_changes=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Commit and push changelog updates
-        if: steps.generate-changelog.outputs.has_changes == 'true' && env.clean_start_completed != 'true'
+  update-appversion:
+    needs: update-changelog
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - name: Update appVersion in Chart.yaml files
+        run: update-appversion.sh --all
+
+  commit-changelog:
+    needs: update-appversion
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - name: Commit and push changelog and chart updates
         run: |
           git add charts/*/CHANGELOG.md
           git add charts/*/Chart.yaml
